@@ -4,19 +4,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class representing a scheduled exam instance.
- * Connects a Course, an assigned TimeSlot, and allocated Rooms.
+ * ============================================================================
+ * CLASS: Exam
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Represents a scheduled exam occurrence.
+ *   Links together:
+ *     - The Course being tested
+ *     - The TimeSlot when it takes place
+ *     - The Rooms assigned to host it
+ *     - The Students registered to write it
+ * ============================================================================
  */
 public class Exam {
 
-    private Course course;
-    private TimeSlot timeSlot;
-    private List<Room> assignedRooms;
-    private List<Student> eligibleStudents;
+    // ------------------------------------------------------------------------
+    // 1. ATTRIBUTES
+    // ------------------------------------------------------------------------
+    private Course course;                   // The subject of this exam
+    private TimeSlot timeSlot;               // Assigned date & time
+    private List<Room> assignedRooms;        // List of rooms allocated for this exam
+    private List<Student> eligibleStudents;  // Students enrolled in this exam
 
-    /**
-     * Parameterized constructor.
-     */
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTORS
+    // ------------------------------------------------------------------------
+
     public Exam(Course course, TimeSlot timeSlot) {
         this.course = course;
         this.timeSlot = timeSlot;
@@ -24,25 +37,26 @@ public class Exam {
         this.eligibleStudents = new ArrayList<>();
     }
 
-    /**
-     * Adds an allocated room for this exam.
-     */
+    // ------------------------------------------------------------------------
+    // 3. METHODS
+    // ------------------------------------------------------------------------
+
     public void addRoom(Room room) {
         if (room != null && !assignedRooms.contains(room)) {
             assignedRooms.add(room);
         }
     }
 
-    /**
-     * Adds an eligible student taking this exam.
-     */
     public void addStudent(Student student) {
         if (student != null && !eligibleStudents.contains(student)) {
             eligibleStudents.add(student);
         }
     }
 
-    // Getters and Setters
+    // ------------------------------------------------------------------------
+    // 4. GETTERS AND SETTERS
+    // ------------------------------------------------------------------------
+
     public Course getCourse() {
         return course;
     }

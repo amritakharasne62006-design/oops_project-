@@ -4,17 +4,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class representing a teacher or invigilator.
- * Extends Person and tracks invigilation duty count for fair scheduling.
+ * ============================================================================
+ * CLASS: Faculty (Subclass of Person)
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Represents a teacher or invigilator appointed to monitor exam rooms.
+ *   Tracks assigned duties and leave dates to ensure fair and clash-free allocation.
+ *
+ * WHY IT EXISTS (OOP CONCEPTS):
+ *   1. INHERITANCE: Inherits id, name, and age from 'Person'.
+ *   2. INTERFACES: Implements 'Comparable<Faculty>' for automatic sorting in a PriorityQueue.
+ *   3. POLYMORPHISM: Overrides 'compareTo()' and 'displayDetails()'.
+ *   4. FAIRNESS LOGIC: Keeps a dutyCount counter so duties are evenly balanced.
+ * ============================================================================
  */
 public class Faculty extends Person implements Comparable<Faculty> {
 
-    private String department;
-    private List<String> leaveDates; // Dates faculty is unavailable (YYYY-MM-DD)
-    private int dutyCount;          // Number of duties assigned so far
+    // ------------------------------------------------------------------------
+    // 1. FACULTY ATTRIBUTES
+    // ------------------------------------------------------------------------
+    private String department;       // Faculty department (e.g., "Information Technology")
+    private List<String> leaveDates; // Dates when faculty is on approved leave (YYYY-MM-DD)
+    private int dutyCount;          // Total invigilation duties assigned so far
+
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTORS
+    // ------------------------------------------------------------------------
 
     /**
-     * Default constructor.
+     * A) DEFAULT CONSTRUCTOR
      */
     public Faculty() {
         super();
@@ -24,7 +42,7 @@ public class Faculty extends Person implements Comparable<Faculty> {
     }
 
     /**
-     * Parameterized constructor.
+     * B) PARAMETERIZED CONSTRUCTOR
      */
     public Faculty(String id, String name, int age, String department) {
         super(id, name, age);
@@ -34,7 +52,7 @@ public class Faculty extends Person implements Comparable<Faculty> {
     }
 
     /**
-     * Copy constructor.
+     * C) COPY CONSTRUCTOR
      */
     public Faculty(Faculty other) {
         super(other);
@@ -45,8 +63,12 @@ public class Faculty extends Person implements Comparable<Faculty> {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // 3. DUTY & LEAVE METHODS
+    // ------------------------------------------------------------------------
+
     /**
-     * Adds an approved leave date.
+     * Records a date when this faculty member cannot attend invigilation duties.
      */
     public void addLeaveDate(String dateStr) {
         if (dateStr != null && !leaveDates.contains(dateStr)) {
@@ -69,15 +91,19 @@ public class Faculty extends Person implements Comparable<Faculty> {
     }
 
     /**
-     * Resets duty count back to zero.
+     * Resets duty count back to zero (for fresh timetable runs).
      */
     public void resetDuty() {
         this.dutyCount = 0;
     }
 
+    // ------------------------------------------------------------------------
+    // 4. COMPARABLE IMPLEMENTATION (For PriorityQueue)
+    // ------------------------------------------------------------------------
+
     /**
      * Compares two faculty members based on duty count.
-     * Needed for PriorityQueue ordering (fewest duties first).
+     * The PriorityQueue will always pick the teacher with the lowest duty count first.
      */
     @Override
     public int compareTo(Faculty other) {
@@ -85,20 +111,23 @@ public class Faculty extends Person implements Comparable<Faculty> {
         return Integer.compare(this.dutyCount, other.dutyCount);
     }
 
-    /**
-     * Overrides abstract displayDetails() method.
-     */
+    // ------------------------------------------------------------------------
+    // 5. OVERRIDDEN ABSTRACT METHOD
+    // ------------------------------------------------------------------------
     @Override
     public void displayDetails() {
-        System.out.println("----- FACULTY DETAILS -----");
+        System.out.println("----- FACULTY PROFILE -----");
         System.out.println("Faculty ID : " + id);
         System.out.println("Name       : " + name);
         System.out.println("Department : " + department);
         System.out.println("Duties Done: " + dutyCount);
-        System.out.println("Leaves     : " + (leaveDates.isEmpty() ? "None" : leaveDates.toString()));
+        System.out.println("Leave Dates: " + (leaveDates.isEmpty() ? "None" : leaveDates.toString()));
     }
 
-    // Getters and Setters
+    // ------------------------------------------------------------------------
+    // 6. GETTERS AND SETTERS
+    // ------------------------------------------------------------------------
+
     public String getDepartment() {
         return department;
     }
@@ -121,6 +150,6 @@ public class Faculty extends Person implements Comparable<Faculty> {
 
     @Override
     public String toString() {
-        return "Faculty[" + id + ", " + name + ", Duties: " + dutyCount + "]";
+        return "Faculty [" + id + " - " + name + " | Duties: " + dutyCount + "]";
     }
 }

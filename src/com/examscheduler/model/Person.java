@@ -1,27 +1,47 @@
 package com.examscheduler.model;
 
 /**
- * Abstract base class representing a human actor in the system.
- * Demonstrates Abstraction, Encapsulation, and Constructor Overloading.
+ * ============================================================================
+ * CLASS: Person (Abstract Base Class)
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Represents a general human being in our college examination system.
+ *   Acts as the parent class for both 'Student' and 'Faculty'.
+ *
+ * WHY IT EXISTS (OOP CONCEPTS):
+ *   1. ABSTRACTION: We cannot create a plain 'Person' object directly (it is abstract).
+ *      A person in an exam is always either a Student or a Faculty.
+ *   2. ENCAPSULATION: All member variables are protected/private, accessed via getters/setters.
+ *   3. CONSTRUCTOR OVERLOADING: Provides Default, Parameterized, and Copy constructors.
+ *   4. 'this' KEYWORD: Used to resolve variable shadowing and for constructor chaining this(...).
+ * ============================================================================
  */
 public abstract class Person {
 
-    // Protected fields accessible by derived classes (Student and Faculty)
-    protected String id;
-    protected String name;
-    protected int age;
+    // ------------------------------------------------------------------------
+    // 1. ATTRIBUTES / MEMBER VARIABLES
+    // 'protected' allows derived classes (Student, Faculty) to access them directly.
+    // ------------------------------------------------------------------------
+    protected String id;     // Unique identification (e.g., PRN for student, EmpID for faculty)
+    protected String name;   // Full name of the person
+    protected int age;       // Age in years
+
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTORS (Demonstrates Constructor Overloading)
+    // ------------------------------------------------------------------------
 
     /**
-     * Default constructor.
-     * Initializes default placeholder values using constructor chaining.
+     * A) DEFAULT CONSTRUCTOR
+     * Calls the parameterized constructor using this(...) constructor chaining.
      */
     public Person() {
         this("UNKNOWN", "Not Assigned", 18);
     }
 
     /**
-     * Parameterized constructor.
-     * Initializes all fields with specific provided values.
+     * B) PARAMETERIZED CONSTRUCTOR
+     * Initializes all the member variables with specific values passed by caller.
+     * Uses 'this.variable = variable' to resolve name shadowing.
      */
     public Person(String id, String name, int age) {
         this.id = id;
@@ -30,8 +50,9 @@ public abstract class Person {
     }
 
     /**
-     * Copy constructor.
-     * Creates a new Person object as an exact copy of an existing Person.
+     * C) COPY CONSTRUCTOR
+     * Creates a new Person object by copying data from an existing Person object.
+     * Useful when we want to clone data safely without affecting the original.
      */
     public Person(Person other) {
         if (other != null) {
@@ -41,49 +62,55 @@ public abstract class Person {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // 3. ABSTRACT METHOD (Forces child classes to provide implementation)
+    // ------------------------------------------------------------------------
+
     /**
-     * Abstract method that derived classes MUST implement to show details.
-     * Demonstrates abstraction and polymorphism.
+     * Abstract method to print personal details.
+     * Every child class (Student, Faculty) MUST override and provide its own implementation.
      */
     public abstract void displayDetails();
 
-    // Getter for ID
+    // ------------------------------------------------------------------------
+    // 4. GETTERS AND SETTERS (Encapsulation and Data Protection)
+    // ------------------------------------------------------------------------
+
     public String getId() {
-        return id;
+        return this.id;
     }
 
-    // Setter for ID
     public void setId(String id) {
         this.id = id;
     }
 
-    // Getter for Name
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    // Setter for Name with simple validation
+    // Setter with basic validation to avoid empty names
     public void setName(String name) {
         if (name != null && !name.trim().isEmpty()) {
             this.name = name;
         }
     }
 
-    // Getter for Age
     public int getAge() {
-        return age;
+        return this.age;
     }
 
-    // Setter for Age
+    // Setter with validation to ensure age is positive
     public void setAge(int age) {
         if (age > 0) {
             this.age = age;
         }
     }
 
-    // Overridden toString method
+    // ------------------------------------------------------------------------
+    // 5. TOSTRING METHOD (Method Overriding from Object class)
+    // ------------------------------------------------------------------------
     @Override
     public String toString() {
-        return "ID: " + id + ", Name: " + name + ", Age: " + age;
+        return "Person [ID=" + id + ", Name=" + name + ", Age=" + age + "]";
     }
 }

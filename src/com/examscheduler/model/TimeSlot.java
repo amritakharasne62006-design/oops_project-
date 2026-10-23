@@ -3,16 +3,32 @@ package com.examscheduler.model;
 import java.util.Objects;
 
 /**
- * Class representing an exam timing slot on a specific date.
- * E.g., Slot 1: 10:00 AM - 12:00 PM, Slot 2: 02:00 PM - 04:00 PM
+ * ============================================================================
+ * CLASS: TimeSlot
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Represents an exam session period on a specific date.
+ *   E.g., Slot 1: 2026-11-02 from 10:00 AM to 12:00 PM.
+ *
+ * WHY IT EXISTS (OOP CONCEPTS):
+ *   1. ENCAPSULATION: Packages slot metadata together cleanly.
+ *   2. EQUALS & HASHCODE: Allows matching slots in maps and conflict checking.
+ * ============================================================================
  */
 public class TimeSlot {
 
-    private int slotId;
-    private String date;      // E.g. "2026-11-02"
-    private String startTime; // E.g. "10:00 AM"
-    private String endTime;   // E.g. "12:00 PM"
-    private String slotLabel; // E.g. "Morning Session"
+    // ------------------------------------------------------------------------
+    // 1. ATTRIBUTES
+    // ------------------------------------------------------------------------
+    private int slotId;        // Numeric slot index (1, 2, 3...)
+    private String date;       // Date string in YYYY-MM-DD format
+    private String startTime;  // Starting time (e.g., "10:00 AM")
+    private String endTime;    // Ending time (e.g., "12:00 PM")
+    private String slotLabel;  // Session name (e.g., "Day 1 Morning")
+
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTORS
+    // ------------------------------------------------------------------------
 
     /**
      * Default constructor.
@@ -32,7 +48,10 @@ public class TimeSlot {
         this.slotLabel = slotLabel;
     }
 
-    // Getters and Setters
+    // ------------------------------------------------------------------------
+    // 3. GETTERS AND SETTERS
+    // ------------------------------------------------------------------------
+
     public int getSlotId() {
         return slotId;
     }
@@ -73,6 +92,9 @@ public class TimeSlot {
         this.slotLabel = slotLabel;
     }
 
+    // ------------------------------------------------------------------------
+    // 4. EQUALS AND HASHCODE
+    // ------------------------------------------------------------------------
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -6,65 +6,88 @@ import com.examscheduler.exception.InsufficientInvigilatorsException;
 import java.util.*;
 
 /**
- * Service to allocate invigilators fairly using a PriorityQueue.
- * Demonstrates Collections (PriorityQueue, HashSet, HashMap), Fairness Algorithms, and Custom Exceptions.
+ * ============================================================================
+ * CLASS: InvigilatorService
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Distributes exam invigilation duties fairly across available faculty.
+ *
+ * HOW THE FAIR ALLOCATION WORKS:
+ *   1. Utilizes a PriorityQueue<Faculty> ordered by 'dutyCount' ascending.
+ *   2. The faculty member with the lowest number of duties is always polled first.
+ *   3. Enforces Hard Rules:
+ *      - Teacher must not already have a duty in the same time slot.
+ *      - Teacher must not be on leave on the exam date.
+ *      - Avoid assigning a teacher to monitor their own subject/department.
+ *   4. Increments duty count and re-inserts into PriorityQueue to balance duties.
+ * ============================================================================
  */
 public class InvigilatorService {
 
+    // ------------------------------------------------------------------------
+    // 1. DATA FIELDS
+    // ------------------------------------------------------------------------
     private List<Faculty> facultyList;
 
-    /**
-     * Parameterized constructor.
-     */
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTOR
+    // ------------------------------------------------------------------------
     public InvigilatorService(List<Faculty> facultyList) {
         this.facultyList = facultyList;
     }
 
+    // ------------------------------------------------------------------------
+    // 3. MAIN ALLOCATION ALGORITHM
+    // ------------------------------------------------------------------------
+
     /**
-     * Fairly allocates invigilators to exams and rooms across all exam sessions.
+     * Fairly distributes duties for all scheduled exams across all exam halls.
      */
     public List<InvigilatorDuty> allocateInvigilators(List<Exam> exams) throws InsufficientInvigilatorsException {
         List<InvigilatorDuty> dutyRoster = new ArrayList<>();
 
-        // PriorityQueue ordered by fewest duties so far
+        // PriorityQueue ordered by fewest duties so far (via Faculty.compareTo)
         PriorityQueue<Faculty> queue = new PriorityQueue<>(facultyList);
 
-        // Group exams by TimeSlot to prevent double-booking a teacher in the same slot
+        // Group exams by TimeSlot to prevent assigning a teacher to 2 rooms simultaneously
         Map<TimeSlot, List<Exam>> slotExamMap = new LinkedHashMap<>();
         for (Exam exam : exams) {
             slotExamMap.putIfAbsent(exam.getTimeSlot(), new ArrayList<>());
             slotExamMap.get(exam.getTimeSlot()).add(exam);
         }
 
+        // Process each exam session slot
         for (Map.Entry<TimeSlot, List<Exam>> entry : slotExamMap.entrySet()) {
             TimeSlot slot = entry.getKey();
             List<Exam> slotExams = entry.getValue();
 
-            // Track faculty already assigned during this slot
-            Set<Faculty> facultyBusyInSlot = new HashSet<>();
+            // Set of faculty already assigned during this slot
+            Set<Faculty> busyInThisSlot = new HashSet<>();
 
             for (Exam exam : slotExams) {
                 for (Room room : exam.getAssignedRooms()) {
-                    Faculty selectedFaculty = findEligibleFaculty(queue, slot, exam, facultyBusyInSlot);
+                    Faculty assignedTeacher = findEligibleFaculty(queue, slot, exam, busyInThisSlot);
 
-                    if (selectedFaculty == null) {
+                    if (assignedTeacher == null) {
                         throw new InsufficientInvigilatorsException(
                             "Cannot find available faculty for " + exam.getCourse().getCode() +
-                            " in Room " + room.getRoomNo() + " at " + slot.getDate() + " (" + slot.getStartTime() + ")!"
+                            " in Room " + room.getRoomNo() + " on " + slot.getDate() + " (" + slot.getStartTime() + ")!"
                         );
                     }
 
-                    // Assign duty
-                    InvigilatorDuty duty = new InvigilatorDuty(selectedFaculty, exam, room.getRoomNo(), slot);
+                    // Create duty record
+                    InvigilatorDuty duty = new InvigilatorDuty(assignedTeacher, exam, room.getRoomNo(), slot);
                     dutyRoster.add(duty);
 
-                    // Update tracking
-                    facultyBusyInSlot.add(selectedFaculty);
-                    selectedFaculty.incrementDuty();
+                    // Mark teacher as busy for this specific slot
+                    busyInThisSlot.add(assignedTeacher);
 
-                    // Re-insert into PriorityQueue so its updated duty count adjusts its priority
-                    queue.remove(selectedFaculty);
-                    queue.offer(selectedFaculty);
+                    // Increment duty count
+                    assignedTeacher.incrementDuty();
+
+                    // Re-position in PriorityQueue to maintain min-heap order
+                    queue.remove(assignedTeacher);
+                    queue.offer(assignedTeacher);
                 }
             }
         }
@@ -72,47 +95,53 @@ public class InvigilatorService {
         return dutyRoster;
     }
 
+    // ------------------------------------------------------------------------
+    // 4. ELIGIBILITY FILTER
+    // ------------------------------------------------------------------------
+
     /**
-     * Finds an eligible faculty from the priority queue meeting all constraints:
-     * 1. Not already assigned in this slot.
-     * 2. Not on leave on this date.
-     * 3. Not teaching their own department/subject exam.
+     * Polls the PriorityQueue to find the teacher with lowest duties who satisfies all rules.
      */
     private Faculty findEligibleFaculty(PriorityQueue<Faculty> queue, TimeSlot slot, Exam exam, Set<Faculty> busySet) {
-        List<Faculty> tempStorage = new ArrayList<>();
-        Faculty chosen = null;
+        List<Faculty> temporaryHold = new ArrayList<>();
+        Faculty selected = null;
 
         while (!queue.isEmpty()) {
             Faculty candidate = queue.poll();
-            tempStorage.add(candidate);
+            temporaryHold.add(candidate);
 
-            // Constraint 1: Not busy in this slot
+            // Rule 1: Cannot be assigned to another room in this same slot
             if (busySet.contains(candidate)) {
                 continue;
             }
 
-            // Constraint 2: Not on leave
+            // Rule 2: Cannot be on leave on this date
             if (candidate.isOnLeave(slot.getDate())) {
                 continue;
             }
 
-            // Constraint 3: Fairness/conflict - Avoid invigilating own subject's exam if possible
+            // Rule 3: Avoid invigilating own subject's exam if other faculty are available
             boolean isOwnSubject = exam.getCourse().getName().toLowerCase().contains(candidate.getDepartment().toLowerCase());
             if (isOwnSubject && queue.size() > 1) {
                 continue;
             }
 
-            chosen = candidate;
+            // Candidate is eligible and has the fewest duties!
+            selected = candidate;
             break;
         }
 
-        // Restore all polled elements back to PriorityQueue
-        queue.addAll(tempStorage);
-        return chosen;
+        // Return all inspected faculty back into the PriorityQueue
+        queue.addAll(temporaryHold);
+        return selected;
     }
 
+    // ------------------------------------------------------------------------
+    // 5. BONUS: DUTY SWAP REQUEST
+    // ------------------------------------------------------------------------
+
     /**
-     * Bonus Feature: Duty swap between two faculty members.
+     * Enables swapping duties between two faculty members if neither is on leave.
      */
     public boolean swapDuty(InvigilatorDuty duty1, InvigilatorDuty duty2) {
         if (duty1 == null || duty2 == null) return false;
@@ -120,19 +149,14 @@ public class InvigilatorService {
         Faculty f1 = duty1.getFaculty();
         Faculty f2 = duty2.getFaculty();
 
-        // Check if f1 is free for duty2's slot and f2 is free for duty1's slot
+        // Check if swap violates leave dates
         if (f1.isOnLeave(duty2.getTimeSlot().getDate()) || f2.isOnLeave(duty1.getTimeSlot().getDate())) {
-            return false;
+            return false; // Swap rejected
         }
 
-        // Swap assignments
-        dutyRosterSwap(duty1, duty2);
+        // Swap faculty references
+        duty1.setFaculty(f2);
+        duty2.setFaculty(f1);
         return true;
-    }
-
-    private void dutyRosterSwap(InvigilatorDuty d1, InvigilatorDuty d2) {
-        // Simple internal swap
-        Faculty temp = d1.getFaculty();
-        // Since fields are private, in real scenario we can reconstruct or provide setters
     }
 }

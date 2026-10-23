@@ -3,15 +3,31 @@ package com.examscheduler.model;
 import java.util.Objects;
 
 /**
- * Class representing an academic course/subject.
- * Demonstrates Encapsulation and equals/hashCode for Graph Colouring node comparisons.
+ * ============================================================================
+ * CLASS: Course
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Represents an academic subject/course to be examined (e.g., CS201 - Java).
+ *
+ * WHY IT EXISTS (OOP CONCEPTS):
+ *   1. ENCAPSULATION: Hides course data behind private attributes and public getters.
+ *   2. CONSTRUCTOR OVERLOADING: Default, Parameterized, and Copy constructors.
+ *   3. EQUALS & HASHCODE: Essential for Graph Colouring node keys in HashMaps.
+ * ============================================================================
  */
 public class Course {
 
-    private String code;         // E.g. "CS201"
-    private String name;         // E.g. "Object Oriented Programming"
-    private int durationMinutes; // E.g. 120 (2 hours)
+    // ------------------------------------------------------------------------
+    // 1. ATTRIBUTES
+    // ------------------------------------------------------------------------
+    private String code;         // Course Code (e.g., "CS201")
+    private String name;         // Course Name (e.g., "Object Oriented Programming")
+    private int durationMinutes; // Duration of exam in minutes (e.g., 120)
     private String examType;     // "Theory" or "Practical"
+
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTORS
+    // ------------------------------------------------------------------------
 
     /**
      * Default constructor.
@@ -42,7 +58,10 @@ public class Course {
         }
     }
 
-    // Getters and Setters
+    // ------------------------------------------------------------------------
+    // 3. GETTERS AND SETTERS
+    // ------------------------------------------------------------------------
+
     public String getCode() {
         return code;
     }
@@ -75,6 +94,9 @@ public class Course {
         this.examType = examType;
     }
 
+    // ------------------------------------------------------------------------
+    // 4. EQUALS AND HASHCODE (Crucial for Graph Colouring)
+    // ------------------------------------------------------------------------
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -90,6 +112,6 @@ public class Course {
 
     @Override
     public String toString() {
-        return code + " - " + name + " (" + durationMinutes + " mins)";
+        return code + " - " + name + " (" + durationMinutes + " mins, " + examType + ")";
     }
 }

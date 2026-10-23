@@ -5,14 +5,23 @@ import com.examscheduler.model.*;
 import java.util.*;
 
 /**
- * Generates formatted console outputs and string reports for exams, seating, and duties.
- * Demonstrates String formatting, Collections traversal, and clean console output.
+ * ============================================================================
+ * CLASS: ReportGenerator
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Formats and displays college reports in structured, readable tables:
+ *   1. Master Timetable (Date and slot wise)
+ *   2. Student Hall Ticket (Searchable by PRN)
+ *   3. Room Seating Charts
+ *   4. Attendance Sheets with signature columns
+ *   5. Invigilator Duty Charts & Workload Statistics
+ * ============================================================================
  */
 public class ReportGenerator {
 
-    /**
-     * Prints the complete Master Timetable ordered by Date and Time Slot.
-     */
+    // ------------------------------------------------------------------------
+    // 1. MASTER TIMETABLE REPORT
+    // ------------------------------------------------------------------------
     public static void printMasterTimetable(List<Exam> exams) {
         System.out.println("\n==========================================================================");
         System.out.println("                         MASTER EXAM TIMETABLE                            ");
@@ -20,7 +29,7 @@ public class ReportGenerator {
         System.out.printf("%-12s | %-12s | %-10s | %-30s | %-10s\n", "DATE", "TIME SLOT", "COURSE", "SUBJECT NAME", "STUDENTS");
         System.out.println("--------------------------------------------------------------------------");
 
-        // Sort exams by date then start time
+        // Sort exams chronologically by date and start time
         List<Exam> sortedExams = new ArrayList<>(exams);
         sortedExams.sort(Comparator.comparing((Exam e) -> e.getTimeSlot().getDate())
                                    .thenComparing(e -> e.getTimeSlot().getStartTime()));
@@ -36,9 +45,9 @@ public class ReportGenerator {
         System.out.println("==========================================================================\n");
     }
 
-    /**
-     * Generates a personalised Hall Ticket for a specific student identified by PRN.
-     */
+    // ------------------------------------------------------------------------
+    // 2. STUDENT HALL TICKET (Personalized by PRN)
+    // ------------------------------------------------------------------------
     public static void printHallTicket(Student student, List<Exam> allExams, Map<String, List<SeatAllocation>> roomAllocations) {
         System.out.println("\n==========================================================================");
         System.out.println("                   PCCoE PUNE - STUDENT HALL TICKET                       ");
@@ -47,7 +56,7 @@ public class ReportGenerator {
         System.out.println("PRN          : " + student.getPrn());
         System.out.println("Department   : " + student.getDepartment() + " (Div " + student.getDivision() + ")");
         System.out.println("--------------------------------------------------------------------------");
-        System.out.printf("%-10s | %-25s | %-12s | %-12s | %-8s | %-8s\n", "COURSE", "COURSE NAME", "DATE", "TIME", "ROOM", "SEAT");
+        System.out.printf("%-10s | %-25s | %-12s | %-12s | %-12s | %-8s\n", "COURSE", "COURSE NAME", "DATE", "TIME", "ROOM", "SEAT");
         System.out.println("--------------------------------------------------------------------------");
 
         for (Exam e : allExams) {
@@ -55,7 +64,7 @@ public class ReportGenerator {
                 String assignedRoom = "TBD";
                 String assignedSeat = "TBD";
 
-                // Lookup seat allocation
+                // Lookup room and seat label from allocations
                 for (Map.Entry<String, List<SeatAllocation>> entry : roomAllocations.entrySet()) {
                     for (SeatAllocation sa : entry.getValue()) {
                         if (sa.getStudent().getPrn().equalsIgnoreCase(student.getPrn()) &&
@@ -67,7 +76,7 @@ public class ReportGenerator {
                     }
                 }
 
-                System.out.printf("%-10s | %-25s | %-12s | %-12s | %-8s | %-8s\n",
+                System.out.printf("%-10s | %-25s | %-12s | %-12s | %-12s | %-8s\n",
                         e.getCourse().getCode(),
                         e.getCourse().getName(),
                         e.getTimeSlot().getDate(),
@@ -79,18 +88,18 @@ public class ReportGenerator {
         System.out.println("==========================================================================\n");
     }
 
-    /**
-     * Prints the Invigilator Duty Chart with duty counts.
-     */
+    // ------------------------------------------------------------------------
+    // 3. FACULTY INVIGILATION DUTY CHART
+    // ------------------------------------------------------------------------
     public static void printDutyChart(List<InvigilatorDuty> duties, List<Faculty> facultyList) {
         System.out.println("\n==========================================================================");
         System.out.println("                      FACULTY INVIGILATION DUTY CHART                     ");
         System.out.println("==========================================================================");
-        System.out.printf("%-10s | %-20s | %-12s | %-12s | %-8s | %-10s\n", "FACULTY ID", "NAME", "DATE", "TIME", "ROOM", "COURSE");
+        System.out.printf("%-10s | %-20s | %-12s | %-12s | %-12s | %-10s\n", "FACULTY ID", "NAME", "DATE", "TIME", "ROOM", "COURSE");
         System.out.println("--------------------------------------------------------------------------");
 
         for (InvigilatorDuty d : duties) {
-            System.out.printf("%-10s | %-20s | %-12s | %-12s | %-8s | %-10s\n",
+            System.out.printf("%-10s | %-20s | %-12s | %-12s | %-12s | %-10s\n",
                     d.getFaculty().getId(),
                     d.getFaculty().getName(),
                     d.getTimeSlot().getDate(),
@@ -99,16 +108,16 @@ public class ReportGenerator {
                     d.getExam().getCourse().getCode());
         }
         System.out.println("--------------------------------------------------------------------------");
-        System.out.println("DUTY SUMMARY (Fairness Distribution):");
+        System.out.println("DUTY SUMMARY (Fairness Verification):");
         for (Faculty f : facultyList) {
-            System.out.println(" -> " + f.getName() + " (" + f.getId() + ") - Total Duties: " + f.getDutyCount());
+            System.out.println(" -> " + f.getName() + " (" + f.getId() + ") - Total Duties Assigned: " + f.getDutyCount());
         }
         System.out.println("==========================================================================\n");
     }
 
-    /**
-     * Prints an Attendance Sheet for a specific Room and Exam.
-     */
+    // ------------------------------------------------------------------------
+    // 4. EXAMINATION ATTENDANCE SHEET
+    // ------------------------------------------------------------------------
     public static void printAttendanceSheet(String roomNo, Course course, List<SeatAllocation> allocations) {
         System.out.println("\n==========================================================================");
         System.out.println("                    EXAMINATION ATTENDANCE SHEET                          ");
@@ -129,15 +138,15 @@ public class ReportGenerator {
         System.out.println("==========================================================================\n");
     }
 
-    /**
-     * Prints Overall Exam Statistics.
-     */
+    // ------------------------------------------------------------------------
+    // 5. OVERALL SESSION SYSTEM STATISTICS
+    // ------------------------------------------------------------------------
     public static void printStatistics(List<Exam> exams, List<Room> rooms, List<Faculty> facultyList) {
         Set<String> uniqueDates = new HashSet<>();
-        int totalStudentsEnrolled = 0;
+        int totalStudentAppearances = 0;
         for (Exam e : exams) {
             uniqueDates.add(e.getTimeSlot().getDate());
-            totalStudentsEnrolled += e.getEligibleStudents().size();
+            totalStudentAppearances += e.getEligibleStudents().size();
         }
 
         int totalRoomCapacity = 0;
@@ -148,11 +157,11 @@ public class ReportGenerator {
         System.out.println("\n==========================================================================");
         System.out.println("                      EXAM SESSION SYSTEM STATISTICS                      ");
         System.out.println("==========================================================================");
-        System.out.println("Total Scheduled Exams   : " + exams.size());
-        System.out.println("Total Exam Days Used    : " + uniqueDates.size() + " " + uniqueDates);
-        System.out.println("Total Student Appearances: " + totalStudentsEnrolled);
-        System.out.println("Total Available Rooms   : " + rooms.size() + " (Capacity: " + totalRoomCapacity + " seats)");
-        System.out.println("Total Registered Faculty: " + facultyList.size());
+        System.out.println("Total Scheduled Exams    : " + exams.size());
+        System.out.println("Total Exam Days Used     : " + uniqueDates.size() + " " + uniqueDates);
+        System.out.println("Total Student Appearances: " + totalStudentAppearances);
+        System.out.println("Total Available Rooms    : " + rooms.size() + " (Capacity: " + totalRoomCapacity + " seats)");
+        System.out.println("Total Registered Faculty : " + facultyList.size());
         System.out.println("==========================================================================\n");
     }
 }

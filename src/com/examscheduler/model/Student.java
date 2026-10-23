@@ -4,23 +4,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class representing an examinee student.
- * Demonstrates Inheritance (extends Person), Encapsulation, and Polymorphism (method overriding).
+ * ============================================================================
+ * CLASS: Student (Subclass of Person)
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Represents a college student who appears for examinations.
+ *   Keeps track of PRN, division, semester, department, and enrolled courses.
+ *
+ * WHY IT EXISTS (OOP CONCEPTS):
+ *   1. INHERITANCE: Inherits id, name, and age from 'Person' using 'extends'.
+ *   2. SUPER KEYWORD: Calls the parent class constructor using 'super(...)'.
+ *   3. POLYMORPHISM (Method Overriding): Overrides 'displayDetails()' to show student info.
+ *   4. ENCAPSULATION: Enrolled courses and student data are kept private.
+ * ============================================================================
  */
 public class Student extends Person {
 
-    private String prn;               // Permanent Registration Number
-    private String division;          // E.g. "A", "B"
-    private int semester;             // E.g. 4
-    private String department;        // E.g. "Information Technology"
-    private List<Course> registeredCourses; // List of enrolled courses
+    // ------------------------------------------------------------------------
+    // 1. SPECIFIC STUDENT ATTRIBUTES
+    // ------------------------------------------------------------------------
+    private String prn;                       // Permanent Registration Number (e.g., "101")
+    private String division;                  // Class division (e.g., "A", "B")
+    private int semester;                     // Current semester (e.g., 3)
+    private String department;                // Department name (e.g., "Information Technology")
+    private List<Course> registeredCourses;   // List of subjects this student is enrolled in
+
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTORS (Default, Parameterized, Copy)
+    // ------------------------------------------------------------------------
 
     /**
-     * Default constructor.
-     * Calls super() and assigns default values.
+     * A) DEFAULT CONSTRUCTOR
+     * Invokes parent default constructor with super() and sets student defaults.
      */
     public Student() {
-        super();
+        super(); // Calls Person()
         this.prn = "PRN0000";
         this.division = "A";
         this.semester = 1;
@@ -29,11 +47,12 @@ public class Student extends Person {
     }
 
     /**
-     * Parameterized constructor.
-     * Uses super to initialize Person fields and this to initialize Student fields.
+     * B) PARAMETERIZED CONSTRUCTOR
+     * Passes personal info to parent Person class via super(id, name, age)
+     * and sets student-specific fields using 'this'.
      */
     public Student(String prn, String name, int age, String division, int semester, String department) {
-        super(prn, name, age);
+        super(prn, name, age); // Pass PRN as the ID to Person
         this.prn = prn;
         this.division = division;
         this.semester = semester;
@@ -42,22 +61,27 @@ public class Student extends Person {
     }
 
     /**
-     * Copy constructor.
-     * Deep-copies student information and course list.
+     * C) COPY CONSTRUCTOR
+     * Creates a new Student from an existing Student, creating a fresh course list.
      */
     public Student(Student other) {
-        super(other);
+        super(other); // Copies parent fields
         if (other != null) {
             this.prn = other.prn;
             this.division = other.division;
             this.semester = other.semester;
             this.department = other.department;
+            // Create a fresh list copy to preserve encapsulation
             this.registeredCourses = new ArrayList<>(other.registeredCourses);
         }
     }
 
+    // ------------------------------------------------------------------------
+    // 3. COURSE MANAGEMENT METHODS
+    // ------------------------------------------------------------------------
+
     /**
-     * Enrolls the student into a new course.
+     * Enrolls the student in an academic course.
      */
     public void enrollCourse(Course course) {
         if (course != null && !registeredCourses.contains(course)) {
@@ -66,29 +90,33 @@ public class Student extends Person {
     }
 
     /**
-     * Checks if the student is registered for a specific course code.
+     * Helper method to verify if this student takes a specific course code.
+     * Used by TimetableGenerator to detect student clashes between two courses.
      */
     public boolean isEnrolledIn(String courseCode) {
         for (Course c : registeredCourses) {
             if (c.getCode().equalsIgnoreCase(courseCode)) {
-                return true;
+                return true; // Match found
             }
         }
-        return false;
+        return false; // Student does not take this course
     }
 
+    // ------------------------------------------------------------------------
+    // 4. OVERRIDDEN ABSTRACT METHOD (Runtime Polymorphism)
+    // ------------------------------------------------------------------------
+
     /**
-     * Overrides Person's abstract method displayDetails().
-     * Demonstrates dynamic method dispatch (runtime polymorphism).
+     * Provides the concrete implementation of Person's abstract displayDetails().
      */
     @Override
     public void displayDetails() {
-        System.out.println("----- STUDENT DETAILS -----");
+        System.out.println("----- STUDENT PROFILE -----");
         System.out.println("PRN        : " + prn);
         System.out.println("Name       : " + name);
         System.out.println("Age        : " + age);
         System.out.println("Department : " + department + " (Sem " + semester + ", Div " + division + ")");
-        System.out.print("Courses    : ");
+        System.out.print("Enrolled In: ");
         if (registeredCourses.isEmpty()) {
             System.out.println("None");
         } else {
@@ -99,14 +127,17 @@ public class Student extends Person {
         }
     }
 
-    // Getters and Setters
+    // ------------------------------------------------------------------------
+    // 5. GETTERS AND SETTERS
+    // ------------------------------------------------------------------------
+
     public String getPrn() {
         return prn;
     }
 
     public void setPrn(String prn) {
         this.prn = prn;
-        this.id = prn; // keep parent id synchronized
+        this.id = prn; // Keep parent ID matching
     }
 
     public String getDivision() {
@@ -139,6 +170,6 @@ public class Student extends Person {
 
     @Override
     public String toString() {
-        return "Student[PRN=" + prn + ", Name=" + name + ", Div=" + division + "]";
+        return "Student [PRN=" + prn + ", Name=" + name + ", Division=" + division + "]";
     }
 }

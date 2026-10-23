@@ -8,9 +8,20 @@ import com.examscheduler.model.Student;
 import java.util.*;
 
 /**
- * Concrete strategy: Anti-Malpractice Interleaved Seating.
- * Groups students by subject and interleaves them across the grid so that
- * direct neighbors (left/right/front/back) do not write the same subject exam.
+ * ============================================================================
+ * CLASS: MixedSubjectSeating (Implements SeatingStrategy)
+ * ============================================================================
+ * WHAT IT DOES:
+ *   ANTI-MALPRACTICE / ANTI-CHEATING SEATING STRATEGY.
+ *   Groups students by course and interleaves them across the desk grid.
+ *
+ * HOW IT WORKS:
+ *   1. Students are partitioned into separate queues by their subject exam.
+ *   2. Desks are filled one by one across rows and columns.
+ *   3. At each desk, we pick a student from an alternating course queue.
+ *   4. Direct physical neighbors (left, right, front, back) do NOT write
+ *      the same exam subject, making copying impossible!
+ * ============================================================================
  */
 public class MixedSubjectSeating implements SeatingStrategy {
 
@@ -19,49 +30,54 @@ public class MixedSubjectSeating implements SeatingStrategy {
         List<SeatAllocation> allocations = new ArrayList<>();
         if (students.isEmpty()) return allocations;
 
-        // Group students by course
+        // Step 1: Group students into separate queues based on course code
         Map<String, Queue<Student>> courseQueues = new HashMap<>();
         for (Student s : students) {
             Course c = courseMap.get(s);
-            String cCode = (c != null) ? c.getCode() : "DEFAULT";
-            courseQueues.putIfAbsent(cCode, new LinkedList<>());
-            courseQueues.get(cCode).add(s);
+            String courseCode = (c != null) ? c.getCode() : "DEFAULT";
+            courseQueues.putIfAbsent(courseCode, new LinkedList<>());
+            courseQueues.get(courseCode).add(s);
         }
 
         List<String> courseList = new ArrayList<>(courseQueues.keySet());
 
-        // Fill grid in a checkerboard pattern
-        int courseIdx = 0;
+        // Step 2: Iterate through each desk in the room grid
+        int courseIndex = 0;
         for (int r = 0; r < room.getRows(); r++) {
             for (int c = 0; c < room.getCols(); c++) {
-                // If all queues are empty, we are done
-                boolean hasRemaining = false;
+
+                // Check if all queues are empty
+                boolean studentsRemaining = false;
                 for (Queue<Student> q : courseQueues.values()) {
                     if (!q.isEmpty()) {
-                        hasRemaining = true;
+                        studentsRemaining = true;
                         break;
                     }
                 }
-                if (!hasRemaining) return allocations;
-
-                // Pick next course queue that has students
-                int attempts = 0;
-                while (courseQueues.get(courseList.get(courseIdx)).isEmpty() && attempts < courseList.size()) {
-                    courseIdx = (courseIdx + 1) % courseList.size();
-                    attempts++;
+                if (!studentsRemaining) {
+                    return allocations; // All students have been seated
                 }
 
-                String selectedCourseCode = courseList.get(courseIdx);
-                Queue<Student> selectedQueue = courseQueues.get(selectedCourseCode);
+                // Find next course queue that still has students
+                int searchAttempts = 0;
+                while (courseQueues.get(courseList.get(courseIndex)).isEmpty() && searchAttempts < courseList.size()) {
+                    courseIndex = (courseIndex + 1) % courseList.size();
+                    searchAttempts++;
+                }
 
-                if (selectedQueue != null && !selectedQueue.isEmpty()) {
-                    Student seatedStudent = selectedQueue.poll();
+                String currentCourseCode = courseList.get(courseIndex);
+                Queue<Student> activeQueue = courseQueues.get(currentCourseCode);
+
+                if (activeQueue != null && !activeQueue.isEmpty()) {
+                    Student seatedStudent = activeQueue.poll();
                     Course course = courseMap.get(seatedStudent);
+
+                    // Create physical seat assignment
                     allocations.add(new SeatAllocation(seatedStudent, course, room.getRoomNo(), r, c));
                 }
 
-                // Alternate subject for next adjacent seat
-                courseIdx = (courseIdx + 1) % courseList.size();
+                // Move to the next subject for the next adjacent desk
+                courseIndex = (courseIndex + 1) % courseList.size();
             }
         }
 

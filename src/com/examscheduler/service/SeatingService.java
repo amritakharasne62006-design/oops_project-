@@ -8,25 +8,41 @@ import com.examscheduler.exception.RoomCapacityExceededException;
 import java.util.*;
 
 /**
- * Service to manage room allocation and seating plan generation.
- * Demonstrates Strategy Pattern, Collections (HashMap, ArrayList), and Exception Handling.
+ * ============================================================================
+ * CLASS: SeatingService
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Manages classroom room allocation and desk seat arrangement.
+ *   - Sorts rooms by capacity (fills largest rooms first for efficiency).
+ *   - Applies the selected SeatingStrategy (Strategy Pattern / Polymorphism).
+ *   - Generates visual 2D ASCII seat charts for examination halls.
+ *
+ * OOP CONCEPTS DEMONSTRATED:
+ *   1. STRATEGY PATTERN: Holds a 'SeatingStrategy' reference, easily swappable at runtime.
+ *   2. RUNTIME POLYMORPHISM: Invokes currentStrategy.allocate(...) without knowing concrete type.
+ *   3. 2D ARRAYS (Array of Objects): Generates a matrix for room desk grids.
+ * ============================================================================
  */
 public class SeatingService {
 
-    private List<Room> rooms;
-    private SeatingStrategy currentStrategy;
+    // ------------------------------------------------------------------------
+    // 1. DATA FIELDS
+    // ------------------------------------------------------------------------
+    private List<Room> rooms;                  // All rooms in the college campus
+    private SeatingStrategy currentStrategy;   // Currently active seating algorithm
 
-    /**
-     * Parameterized constructor. Default strategy is MixedSubjectSeating.
-     */
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTOR
+    // ------------------------------------------------------------------------
     public SeatingService(List<Room> rooms) {
         this.rooms = new ArrayList<>(rooms);
+        // Default to anti-cheating MixedSubjectSeating
         this.currentStrategy = new MixedSubjectSeating();
     }
 
-    /**
-     * Changes the seating strategy dynamically at runtime (Polymorphism in action).
-     */
+    // ------------------------------------------------------------------------
+    // 3. RUNTIME STRATEGY SWAPPING (Polymorphism)
+    // ------------------------------------------------------------------------
     public void setStrategy(SeatingStrategy strategy) {
         if (strategy != null) {
             this.currentStrategy = strategy;
@@ -37,11 +53,15 @@ public class SeatingService {
         return currentStrategy;
     }
 
+    // ------------------------------------------------------------------------
+    // 4. ROOM & SEATING ALLOCATION LOGIC
+    // ------------------------------------------------------------------------
+
     /**
-     * Generates seating arrangement for a group of exams taking place in the SAME time slot.
+     * Generates seating allocations for all exams sharing the same time slot.
      */
     public Map<String, List<SeatAllocation>> generateSeatingForSlot(List<Exam> slotExams) throws RoomCapacityExceededException {
-        // Collect all students and their respective courses for this slot
+        // Step 1: Aggregate all examinee students across all courses in this slot
         List<Student> allSlotStudents = new ArrayList<>();
         Map<Student, Course> studentCourseMap = new HashMap<>();
 
@@ -52,7 +72,7 @@ public class SeatingService {
             }
         }
 
-        // Sort rooms by capacity descending (fill largest rooms first)
+        // Step 2: Filter available rooms and sort by capacity descending (Largest rooms first)
         List<Room> availableRooms = new ArrayList<>();
         for (Room r : rooms) {
             if (r.isAvailable()) {
@@ -61,7 +81,7 @@ public class SeatingService {
         }
         availableRooms.sort((r1, r2) -> Integer.compare(r2.getCapacity(), r1.getCapacity()));
 
-        // Calculate total available room capacity
+        // Step 3: Validate total capacity against student count
         int totalCapacity = 0;
         for (Room r : availableRooms) {
             totalCapacity += r.getCapacity();
@@ -69,32 +89,33 @@ public class SeatingService {
 
         if (allSlotStudents.size() > totalCapacity) {
             throw new RoomCapacityExceededException(
-                "Total students in slot (" + allSlotStudents.size() +
-                ") exceeds total room capacity (" + totalCapacity + ")!"
+                "Capacity Exceeded! Students in slot: " + allSlotStudents.size() +
+                ", but total available room capacity: " + totalCapacity
             );
         }
 
+        // Step 4: Fill rooms and execute the chosen seating strategy
         Map<String, List<SeatAllocation>> roomAllocations = new LinkedHashMap<>();
         int studentPointer = 0;
 
         for (Room room : availableRooms) {
             if (studentPointer >= allSlotStudents.size()) {
-                break; // All students seated
+                break; // All students have been seated
             }
 
-            // Slice out batch of students for this room
-            int batchSize = Math.min(room.getCapacity(), allSlotStudents.size() - studentPointer);
+            // Determine how many students fit into this room
+            int countForThisRoom = Math.min(room.getCapacity(), allSlotStudents.size() - studentPointer);
             List<Student> roomBatch = new ArrayList<>();
-            for (int i = 0; i < batchSize; i++) {
+            for (int i = 0; i < countForThisRoom; i++) {
                 roomBatch.add(allSlotStudents.get(studentPointer + i));
             }
-            studentPointer += batchSize;
+            studentPointer += countForThisRoom;
 
-            // Apply selected seating strategy
+            // Apply selected polymorphic seating strategy
             List<SeatAllocation> allocations = currentStrategy.allocate(roomBatch, studentCourseMap, room);
             roomAllocations.put(room.getRoomNo(), allocations);
 
-            // Associate this room with the exams
+            // Record this room inside each exam
             for (Exam exam : slotExams) {
                 exam.addRoom(room);
             }
@@ -103,20 +124,25 @@ public class SeatingService {
         return roomAllocations;
     }
 
+    // ------------------------------------------------------------------------
+    // 5. 2D ASCII SEATING GRID VISUALIZER
+    // ------------------------------------------------------------------------
+
     /**
-     * Prints an ASCII representation of the room seating grid.
+     * Prints an ASCII desk grid representing the physical layout of the examination hall.
      */
     public void printRoomGrid(Room room, List<SeatAllocation> allocations) {
+        // Create 2D Array of desk representations
         String[][] grid = new String[room.getRows()][room.getCols()];
 
-        // Initialize grid as empty
+        // Initialize all desks as EMPTY
         for (int r = 0; r < room.getRows(); r++) {
             for (int c = 0; c < room.getCols(); c++) {
                 grid[r][c] = "[  EMPTY  ]";
             }
         }
 
-        // Fill grid with student allocations
+        // Place students onto their assigned desk positions
         for (SeatAllocation sa : allocations) {
             if (sa.getRow() < room.getRows() && sa.getCol() < room.getCols()) {
                 String label = sa.getStudent().getPrn() + ":" + sa.getCourse().getCode();
@@ -124,8 +150,9 @@ public class SeatingService {
             }
         }
 
-        System.out.println("\n=== SEATING GRID FOR ROOM: " + room.getRoomNo() + " ===");
-        System.out.println("Strategy: " + currentStrategy.getStrategyName());
+        // Print header and layout
+        System.out.println("\n=== PHYSICAL SEATING LAYOUT: " + room.getRoomNo() + " ===");
+        System.out.println("Applied Strategy: " + currentStrategy.getStrategyName());
         System.out.println("-------------------------------------------------------------------");
 
         for (int r = 0; r < room.getRows(); r++) {

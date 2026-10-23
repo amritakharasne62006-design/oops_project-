@@ -7,19 +7,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class for File Input/Output operations using Character Streams.
- * Demonstrates FileReader, BufferedReader, FileWriter, BufferedWriter, and Exception Handling.
+ * ============================================================================
+ * CLASS: FileHandler
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Handles file input and output operations for saving and exporting exam data.
+ *
+ * SYLLABUS TOPICS COVERED:
+ *   1. CHARACTER STREAMS: Uses FileReader, BufferedReader, FileWriter, BufferedWriter.
+ *   2. EXCEPTION HANDLING: Proper try-catch-finally blocks to safely close streams.
+ *   3. CSV EXPORT: Saves generated timetable and seating plans to standard CSV format.
+ * ============================================================================
  */
 public class FileHandler {
 
+    // ------------------------------------------------------------------------
+    // 1. EXPORT MASTER TIMETABLE TO CSV
+    // ------------------------------------------------------------------------
+
     /**
-     * Exports the master timetable to a formatted CSV file using BufferedWriter.
+     * Writes the master exam timetable into a CSV file using BufferedWriter.
      */
     public static void exportTimetableToCSV(List<Exam> exams, String filePath) throws IOException {
         File file = new File(filePath);
-        // Ensure parent directories exist
         if (file.getParentFile() != null) {
-            file.getParentFile().mkdirs();
+            file.getParentFile().mkdirs(); // Create directories if needed
         }
 
         FileWriter fileWriter = null;
@@ -29,11 +41,11 @@ public class FileHandler {
             fileWriter = new FileWriter(file);
             bufferedWriter = new BufferedWriter(fileWriter);
 
-            // Write CSV Header
+            // Step 1: Write CSV Column Headers
             bufferedWriter.write("CourseCode,CourseName,Date,StartTime,EndTime,TotalStudents");
             bufferedWriter.newLine();
 
-            // Write Exam Rows
+            // Step 2: Write Each Exam Record
             for (Exam e : exams) {
                 String line = String.format("%s,%s,%s,%s,%s,%d",
                         e.getCourse().getCode(),
@@ -48,9 +60,10 @@ public class FileHandler {
             }
 
             bufferedWriter.flush();
-            System.out.println("[SUCCESS] Master Timetable exported to: " + file.getAbsolutePath());
+            System.out.println("[SUCCESS] Master Timetable saved to: " + file.getAbsolutePath());
+
         } finally {
-            // Clean up resources in finally block (demonstrates syllabus standard)
+            // Step 3: Explicitly close resources in finally block
             if (bufferedWriter != null) {
                 try {
                     bufferedWriter.close();
@@ -68,8 +81,12 @@ public class FileHandler {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // 2. EXPORT SEATING PLAN TO CSV
+    // ------------------------------------------------------------------------
+
     /**
-     * Exports seating allocation to a CSV file.
+     * Exports desk allocations to CSV using try-with-resources.
      */
     public static void exportSeatingToCSV(List<SeatAllocation> allocations, String filePath) throws IOException {
         File file = new File(filePath);
@@ -94,12 +111,16 @@ public class FileHandler {
             }
 
             bw.flush();
-            System.out.println("[SUCCESS] Seating chart exported to: " + file.getAbsolutePath());
+            System.out.println("[SUCCESS] Seating Plan saved to: " + file.getAbsolutePath());
         }
     }
 
+    // ------------------------------------------------------------------------
+    // 3. READ TEXT FILE (BufferedReader demonstration)
+    // ------------------------------------------------------------------------
+
     /**
-     * Reads a text file line-by-line using BufferedReader and displays its content.
+     * Reads a text file line-by-line using FileReader and BufferedReader.
      */
     public static List<String> readTextFile(String filePath) throws IOException {
         List<String> lines = new ArrayList<>();

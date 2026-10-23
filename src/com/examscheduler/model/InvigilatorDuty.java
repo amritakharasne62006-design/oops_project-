@@ -1,19 +1,31 @@
 package com.examscheduler.model;
 
 /**
- * Class representing an invigilation duty assignment.
- * Links a Faculty member to an Exam, a Room, and the associated TimeSlot.
+ * ============================================================================
+ * CLASS: InvigilatorDuty
+ * ============================================================================
+ * WHAT IT DOES:
+ *   Represents one exam invigilation duty assignment.
+ *   Connects:
+ *     - The assigned Faculty teacher
+ *     - The Exam being supervised
+ *     - The Room being invigilated
+ *     - The TimeSlot when duty takes place
+ * ============================================================================
  */
 public class InvigilatorDuty {
 
-    private Faculty faculty;
-    private Exam exam;
-    private String roomNo;
-    private TimeSlot timeSlot;
+    // ------------------------------------------------------------------------
+    // 1. ATTRIBUTES
+    // ------------------------------------------------------------------------
+    private Faculty faculty;    // Appointed faculty member
+    private Exam exam;          // Exam being invigilated
+    private String roomNo;      // Room number (e.g., "Auditorium")
+    private TimeSlot timeSlot;  // Date and timing of the duty
 
-    /**
-     * Parameterized constructor.
-     */
+    // ------------------------------------------------------------------------
+    // 2. CONSTRUCTOR
+    // ------------------------------------------------------------------------
     public InvigilatorDuty(Faculty faculty, Exam exam, String roomNo, TimeSlot timeSlot) {
         this.faculty = faculty;
         this.exam = exam;
@@ -21,27 +33,47 @@ public class InvigilatorDuty {
         this.timeSlot = timeSlot;
     }
 
-    // Getters and Setters
+    // ------------------------------------------------------------------------
+    // 3. GETTERS AND SETTERS
+    // ------------------------------------------------------------------------
+
     public Faculty getFaculty() {
         return faculty;
+    }
+
+    public void setFaculty(Faculty faculty) {
+        this.faculty = faculty;
     }
 
     public Exam getExam() {
         return exam;
     }
 
+    public void setExam(Exam exam) {
+        this.exam = exam;
+    }
+
     public String getRoomNo() {
         return roomNo;
+    }
+
+    public void setRoomNo(String roomNo) {
+        this.roomNo = roomNo;
     }
 
     public TimeSlot getTimeSlot() {
         return timeSlot;
     }
 
+    public void setTimeSlot(TimeSlot timeSlot) {
+        this.timeSlot = timeSlot;
+    }
+
     @Override
     public String toString() {
-        return "Duty: " + faculty.getName() + " in " + roomNo + " for " +
-               (exam != null ? exam.getCourse().getCode() : "Exam") +
-               " on " + (timeSlot != null ? timeSlot.toString() : "TBD");
+        return "InvigilatorDuty [Faculty=" + faculty.getName() +
+               ", Room=" + roomNo +
+               ", Course=" + (exam != null ? exam.getCourse().getCode() : "N/A") +
+               ", Slot=" + (timeSlot != null ? timeSlot.toString() : "TBD") + "]";
     }
 }
