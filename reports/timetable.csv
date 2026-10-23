@@ -1,0 +1,6 @@
+CourseCode,CourseName,Date,StartTime,EndTime,TotalStudents
+CS201,Object Oriented Programming,2026-11-02,10:00 AM,12:00 PM,5
+CS202,Data Structures & Algorithms,2026-11-02,02:00 PM,04:00 PM,5
+IT203,Database Management Systems,2026-11-03,10:00 AM,12:00 PM,10
+IT204,Discrete Mathematics,2026-11-02,10:00 AM,12:00 PM,5
+BS205,Environmental Science,2026-11-02,02:00 PM,04:00 PM,5
